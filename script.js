@@ -10,10 +10,10 @@ function showClosedFields() {
 
 function calculateSelection() {
     const systemType = document.querySelector('input[name="systemType"]:checked').value;
-    let recircRate = parseFloat(document.getElementById('recircRate').value);
-    let tonnage = parseFloat(document.getElementById('tonnage').value);
-    let systemVolume = parseFloat(document.getElementById('systemVolume').value);
-    let electricalCost = parseFloat(document.getElementById(systemType === 'Open' ? 'electricalCostOpen' : 'electricalCostClosed').value);
+    let recircRate = parseFloat(document.getElementById('recircRate').value) || 0;
+    let tonnage = parseFloat(document.getElementById('tonnage').value) || 0;
+    let systemVolume = parseFloat(document.getElementById('systemVolume').value) || 0;
+    let electricalCost = parseFloat(document.getElementById(systemType === 'Open' ? 'electricalCostOpen' : 'electricalCostClosed').value) || 0;
 
     fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vT216WTQadamMw4sIIFvBuWNWe69BCz3GedD5Ahcy3i187k9XGtiBve_yUiDc7jtqYZjtB4mrgDPnbK/pub?gid=0&single=true&output=csv')
         .then(response => response.text())
