@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-A">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cooling Water Filtration Selector</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="header-bar"></div>
+    <div class="container">
+        <h1>Cooling Water Filtration</h1>
+
+        <div class="image-container">
+            <img src="https://i.imgur.com/NPE1yC7.png" alt="Filtration Unit 1" class="filter-image">
+            <img src="https://i.imgur.com/zR27Q2P.png" alt="Filtration Unit 2 V-2000H" class="filter-image">
+            <img src="https://i.imgur.com/bQfP9kI.png" alt="Filtration Unit 3 Skid" class="filter-image">
+        </div>
+
+        <div class="selection-box">
+            <div class="input-group initial-selection">
+                <label><input type="radio" name="systemType" value="open" id="radioOpen"> Open</label>
+                <label><input type="radio" name="systemType" value="closed" id="radioClosed"> Closed</label>
+            </div>
+        </div>
+
+        <div id="openSystemInputs" class="selection-box dynamic-inputs" style="display: none;">
+            <div class="input-group">
+                <label for="recircRate">Recirc Rate (gpm):</label>
+                <input type="number" id="recircRate" name="recircRate" placeholder="e.g., 500">
+                <span>OR</span>
+                <label for="tonnage">Tonnage (tons):</label>
+                <input type="number" id="tonnage" name="tonnage" placeholder="e.g., 100">
+            </div>
+            <div class="input-group">
+                <label for="electricalCostOpen">Electrical Cost ($/kWh):</label>
+                <input type="number" id="electricalCostOpen" name="electricalCost" step="0.01" placeholder="e.g., 0.10">
+            </div>
+        </div>
+
+        <div id="closedSystemInputs" class="selection-box dynamic-inputs" style="display: none;">
+            <div class="input-group">
+                <label for="systemVolume">System Volume (Gallons):</label>
+                <input type="number" id="systemVolume" name="systemVolume" placeholder="e.g., 10000">
+            </div>
+            <div class="input-group">
+                <label for="electricalCostClosed">Electrical Cost ($/kWh):</label>
+                <input type="number" id="electricalCostClosed" name="electricalCost" step="0.01" placeholder="e.g., 0.10">
+            </div>
+        </div>
+        
+        <div class="selection-box" id="calculateButtonContainer" style="display:none;">
+             <button id="calculateButton">Find Models</button>
+        </div>
+
+
+        <div id="resultsContainer" class="results-area" style="display: none;">
+            <h2>Recommended Models</h2>
+            <div class="results-grid">
+                <div class="result-column" id="separatorResult">
+                    <h3>Separator</h3>
+                    <p><strong>Model:</strong> <span class="model">-</span></p>
+                    <p><strong>Flowrate:</strong> <span class="flowrate">-</span> gpm</p>
+                    <p><strong>Description:</strong> <span class="description">-</span></p>
+                    <p><strong>Operating Cost:</strong> $<span class="opCost">-</span>/yr</p>
+                </div>
+                <div class="result-column" id="vafResult">
+                    <h3>VAF</h3>
+                    <p><strong>Model:</strong> <span class="model">-</span></p>
+                    <p><strong>Flowrate:</strong> <span class="flowrate">-</span> gpm</p>
+                    <p><strong>Description:</strong> <span class="description">-</span></p>
+                    <p><strong>Operating Cost:</strong> $<span class="opCost">-</span>/yr</p>
+                </div>
+                <div class="result-column" id="vortisandResult">
+                    <h3>Vortisand</h3>
+                    <p><strong>Model:</strong> <span class="model">-</span></p>
+                    <p><strong>Flowrate:</strong> <span class="flowrate">-</span> gpm</p>
+                    <p><strong>Description:</strong> <span class="description">-</span></p>
+                    <p><strong>Operating Cost:</strong> $<span class="opCost">-</span>/yr</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
