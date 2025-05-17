@@ -1,172 +1,216 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const radioOpen = document.getElementById('radioOpen');
-    const radioClosed = document.getElementById('radioClosed');
+    const dbUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT216WTQadamMw4sIIFvBuWNWe69BCz3GedD5Ahcy3i187k9XGtiBve_yUiDc7jtqYZjtB4mrgDPnbK/pub?gid=0&single=true&output=csv';
+    let database = [];
+
+    // DOM Elements
+    const openRadio = document.getElementById('openRadio');
+    const closedRadio = document.getElementById('closedRadio');
     const openSystemInputs = document.getElementById('openSystemInputs');
     const closedSystemInputs = document.getElementById('closedSystemInputs');
-    const calculateButtonContainer = document.getElementById('calculateButtonContainer');
-    const calculateButton = document.getElementById('calculateButton');
-    const resultsContainer = document.getElementById('resultsContainer');
+    const electricalCostInputSection = document.getElementById('electricalCostInput');
+    const calculateButtonSection = document.getElementById('calculateButtonSection');
+    const resultsSection = document.getElementById('resultsSection');
 
     const recircRateInput = document.getElementById('recircRate');
     const tonnageInput = document.getElementById('tonnage');
-    const electricalCostOpenInput = document.getElementById('electricalCostOpen');
     const systemVolumeInput = document.getElementById('systemVolume');
-    const electricalCostClosedInput = document.getElementById('electricalCostClosed');
+    const electricalCostInput = document.getElementById('electricalCost');
+    const calculateBtn = document.getElementById('calculateBtn');
 
-    const dbUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT216WTQadamMw4sIIFvBuWNWe69BCz3GedD5Ahcy3i187k9XGtiBve_yUiDc7jtqYZjtB4mrgDPnbK/pub?gid=0&single=true&output=csv';
-    let dbData = [];
-
-    // Fetch and parse CSV data
+    // --- Fetch and Parse CSV Database ---
     async function fetchData() {
         try {
             const response = await fetch(dbUrl);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             const csvText = await response.text();
-            dbData = parseCSV(csvText);
-            // console.log("Parsed DB Data:", dbData); // For debugging
+            database = parseCSV(csvText);
+            // console.log('Database loaded:', database); // For debugging
         } catch (error) {
-            console.error("Error fetching or parsing CSV data:", error);
-            resultsContainer.innerHTML = "<p>Error loading data. Please try again later.</p>";
-            resultsContainer.style.display = 'block';
+            console.error('Error fetching or parsing database:', error);
+            alert('Failed to load the filter database. Please check the console for errors.');
         }
     }
 
-    function parseCSV(text) {
-        const rows = text.split(/\r?\n/).map(row => row.split(',').map(cell => cell.trim()));
-        const headers = rows[0];
-        return rows.slice(1).map(row => {
-            const rowData = {};
+    function parseCSV(csvText) {
+        const lines = csvText.trim().split('\n');
+        const headers = lines[0].split(',').map(header => header.trim());
+        const data = [];
+        for (let i = 1; i < lines.length; i++) {
+            const values = lines[i].split(',');
+            const entry = {};
             headers.forEach((header, index) => {
-                rowData[header] = row[index];
+                const value = values[index] ? values[index].trim() : '';
+                // Convert numerical fields from strings to numbers
+                if (!isNaN(value) && value !== '') {
+                    entry[header] = parseFloat(value);
+                } else {
+                    entry[header] = value;
+                }
             });
-            return rowData;
-        });
+            data.push(entry);
+        }
+        return data;
     }
 
-    function toggleInputs() {
-        const selectedType = document.querySelector('input[name="systemType"]:checked');
-        if (!selectedType) {
-            openSystemInputs.style.display = 'none';
-            closedSystemInputs.style.display = 'none';
-            calculateButtonContainer.style.display = 'none';
-            resultsContainer.style.display = 'none';
-            return;
+    // --- Event Listeners ---
+    openRadio.addEventListener('change', handleSystemTypeChange);
+    closedRadio.addEventListener('change', handleSystemTypeChange);
+    calculateBtn.addEventListener('click', handleCalculation);
+
+    // Disable other inputs if one is filled for open system
+    recircRateInput.addEventListener('input', () => {
+        if (recircRateInput.value) {
+            tonnageInput.disabled = true;
+            tonnageInput.value = ''; // Clear other input
+        } else {
+            tonnageInput.disabled = false;
         }
-
-        if (selectedType.value === 'open') {
-            openSystemInputs.style.display = 'block';
-            closedSystemInputs.style.display = 'none';
-        } else if (selectedType.value === 'closed') {
-            openSystemInputs.style.display = 'none';
-            closedSystemInputs.style.display = 'block';
-        }
-        calculateButtonContainer.style.display = 'block';
-        resultsContainer.style.display = 'none'; // Hide results when inputs change
-    }
-
-    radioOpen.addEventListener('change', toggleInputs);
-    radioClosed.addEventListener('change', toggleInputs);
-
-    calculateButton.addEventListener('click', () => {
-        if (dbData.length === 0) {
-            alert("Data is still loading or failed to load. Please wait or refresh.");
-            return;
-        }
-
-        const selectedType = document.querySelector('input[name="systemType"]:checked').value;
-        let electricalCost;
-        let foundSeparator = null;
-        let foundVAF = null;
-        let foundVortisand = null;
-
-        if (selectedType === 'open') {
-            const recircRate = parseFloat(recircRateInput.value);
-            const tonnage = parseFloat(tonnageInput.value);
-            electricalCost = parseFloat(electricalCostOpenInput.value);
-
-            if (isNaN(electricalCost) || electricalCost <= 0) {
-                alert("Please enter a valid Electrical Cost for Open System.");
-                return;
-            }
-            if ((isNaN(recircRate) || recircRate <= 0) && (isNaN(tonnage) || tonnage <= 0)) {
-                alert("Please enter a valid Recirc Rate or Tonnage for Open System.");
-                return;
-            }
-
-            dbData.forEach(item => {
-                const minRecirc = parseFloat(item['Min Recirc Rate (gpm)']);
-                const maxRecirc = parseFloat(item['Max Recirc Rate (gpm)']);
-                const tonnageMin = parseFloat(item['Tonnage Min']);
-                const tonnageMax = parseFloat(item['Tonnage Max']);
-
-                let matches = false;
-                if (!isNaN(recircRate) && recircRate >= minRecirc && recircRate <= maxRecirc) {
-                    matches = true;
-                } else if (!isNaN(tonnage) && tonnage >= tonnageMin && tonnage <= tonnageMax) {
-                    matches = true;
-                }
-                
-                if (matches) {
-                    if (item['Filter Type'] === 'Separator' && !foundSeparator) foundSeparator = item;
-                    if (item['Filter Type'] === 'VAF' && !foundVAF) foundVAF = item;
-                    if (item['Filter Type'] === 'Vortisand' && !foundVortisand) foundVortisand = item;
-                }
-            });
-
-        } else if (selectedType === 'closed') {
-            const systemVolume = parseFloat(systemVolumeInput.value);
-            electricalCost = parseFloat(electricalCostClosedInput.value);
-
-            if (isNaN(electricalCost) || electricalCost <= 0) {
-                alert("Please enter a valid Electrical Cost for Closed System.");
-                return;
-            }
-            if (isNaN(systemVolume) || systemVolume <= 0) {
-                alert("Please enter a valid System Volume for Closed System.");
-                return;
-            }
-
-            dbData.forEach(item => {
-                const loopMin = parseFloat(item['Loop Min (Gal)']);
-                const loopMax = parseFloat(item['Loop Max (Gal)']);
-                
-                if (!isNaN(systemVolume) && systemVolume >= loopMin && systemVolume <= loopMax) {
-                    if (item['Filter Type'] === 'Separator' && !foundSeparator) foundSeparator = item;
-                    if (item['Filter Type'] === 'VAF' && !foundVAF) foundVAF = item;
-                    if (item['Filter Type'] === 'Vortisand' && !foundVortisand) foundVortisand = item;
-                }
-            });
-        }
-
-        displayResults(foundSeparator, foundVAF, foundVortisand, electricalCost);
     });
 
-    function displayResults(separator, vaf, vortisand, electricalCost) {
-        updateResultColumn('separatorResult', separator, electricalCost, 'Max Recirc Rate (gpm)');
-        updateResultColumn('vafResult', vaf, electricalCost, 'Flowrate (gpm)');
-        updateResultColumn('vortisandResult', vortisand, electricalCost, 'Flowrate (gpm)');
-        resultsContainer.style.display = 'block';
-    }
-
-    function updateResultColumn(elementId, item, electricalCost, flowrateKey) {
-        const column = document.getElementById(elementId);
-        if (item) {
-            const electricalUsage = parseFloat(item['Electrical Usage (kWh/yr)']); // Assuming kWh/yr
-            const opCost = (!isNaN(electricalUsage) && !isNaN(electricalCost)) ? (electricalUsage * electricalCost).toFixed(2) : 'N/A';
-            const flowrate = item[flowrateKey] || item['Flowrate (gpm)'] || item['Min Recirc Rate (gpm)'] +'-'+ item['Max Recirc Rate (gpm)'] || 'N/A';
-
-
-            column.querySelector('.model').textContent = item.Model || 'N/A';
-            column.querySelector('.flowrate').textContent = flowrate;
-            column.querySelector('.description').textContent = item.Description || 'N/A';
-            column.querySelector('.opCost').textContent = opCost;
+    tonnageInput.addEventListener('input', () => {
+        if (tonnageInput.value) {
+            recircRateInput.disabled = true;
+            recircRateInput.value = ''; // Clear other input
         } else {
-            column.querySelector('.model').textContent = 'No model found';
-            column.querySelector('.flowrate').textContent = '-';
-            column.querySelector('.description').textContent = '-';
-            column.querySelector('.opCost').textContent = '-';
+            recircRateInput.disabled = false;
+        }
+    });
+
+
+    function handleSystemTypeChange() {
+        openSystemInputs.classList.add('hidden');
+        closedSystemInputs.classList.add('hidden');
+        electricalCostInputSection.classList.add('hidden');
+        calculateButtonSection.classList.add('hidden');
+        resultsSection.classList.add('hidden'); // Hide results when type changes
+
+        // Clear previous inputs when system type changes
+        recircRateInput.value = '';
+        tonnageInput.value = '';
+        systemVolumeInput.value = '';
+        electricalCostInput.value = '';
+        recircRateInput.disabled = false;
+        tonnageInput.disabled = false;
+
+
+        if (openRadio.checked) {
+            openSystemInputs.classList.remove('hidden');
+            electricalCostInputSection.classList.remove('hidden');
+            calculateButtonSection.classList.remove('hidden');
+        } else if (closedRadio.checked) {
+            closedSystemInputs.classList.remove('hidden');
+            electricalCostInputSection.classList.remove('hidden');
+            calculateButtonSection.classList.remove('hidden');
         }
     }
 
-    // Initial fetch of data
-    fetchData();
+    function handleCalculation() {
+        if (database.length === 0) {
+            alert("Database is not loaded yet. Please wait or try refreshing.");
+            return;
+        }
+
+        const electricalCost = parseFloat(electricalCostInput.value);
+        if (isNaN(electricalCost) || electricalCost < 0) {
+            alert('Please enter a valid Electrical Cost.');
+            return;
+        }
+
+        let selectedSeparator = null;
+        let selectedVaf = null;
+        let selectedVortisand = null;
+
+        if (openRadio.checked) {
+            const recircRate = parseFloat(recircRateInput.value);
+            const tonnage = parseFloat(tonnageInput.value);
+
+            if (isNaN(recircRate) && isNaN(tonnage)) {
+                alert('Please enter either Recirc Rate or Tonnage for an open system.');
+                return;
+            }
+            if (!isNaN(recircRate) && recircRate < 0) {
+                alert('Recirc Rate cannot be negative.');
+                return;
+            }
+             if (!isNaN(tonnage) && tonnage < 0) {
+                alert('Tonnage cannot be negative.');
+                return;
+            }
+
+
+            database.forEach(item => {
+                const matchesRecirc = !isNaN(recircRate) && item['Min Recirc Rate'] <= recircRate && item['Max Recirc Rate'] >= recircRate;
+                const matchesTonnage = !isNaN(tonnage) && item['Tonnage Min'] <= tonnage && item['Tonnage Max'] >= tonnage;
+
+                if (matchesRecirc || matchesTonnage) {
+                    if (item['Filter Type'] === 'Separator' && !selectedSeparator) {
+                        selectedSeparator = item;
+                    } else if (item['Filter Type'] === 'VAF' && !selectedVaf) {
+                        selectedVaf = item;
+                    } else if (item['Filter Type'] === 'Vortisand' && !selectedVortisand) {
+                        selectedVortisand = item;
+                    }
+                }
+            });
+
+        } else if (closedRadio.checked) {
+            const systemVolume = parseFloat(systemVolumeInput.value);
+            if (isNaN(systemVolume) || systemVolume <= 0) {
+                alert('Please enter a valid System Volume for a closed system.');
+                return;
+            }
+
+            database.forEach(item => {
+                if (item['Loop Min'] <= systemVolume && item['Loop Max'] >= systemVolume) {
+                    if (item['Filter Type'] === 'Separator' && !selectedSeparator) {
+                        selectedSeparator = item;
+                    } else if (item['Filter Type'] === 'VAF' && !selectedVaf) {
+                        selectedVaf = item;
+                    } else if (item['Filter Type'] === 'Vortisand' && !selectedVortisand) {
+                        selectedVortisand = item;
+                    }
+                }
+            });
+        }
+
+        displayResults(selectedSeparator, selectedVaf, selectedVortisand, electricalCost);
+    }
+
+    function displayResults(separator, vaf, vortisand, electricalCost) {
+        resultsSection.classList.remove('hidden');
+
+        updateResultColumn('separator', separator, electricalCost);
+        updateResultColumn('vaf', vaf, electricalCost);
+        updateResultColumn('vortisand', vortisand, electricalCost);
+    }
+
+    function updateResultColumn(type, item, electricalCost) {
+        const modelEl = document.getElementById(`${type}Model`);
+        const flowrateEl = document.getElementById(`${type}Flowrate`);
+        const opCostEl = document.getElementById(`${type}OpCost`);
+        const filtrationEl = document.getElementById(`${type}Filtration`);
+        const descriptionEl = document.getElementById(`${type}Description`);
+
+        if (item) {
+            modelEl.textContent = item['Model'] || '-';
+            flowrateEl.textContent = item['Flow Rate (gpm)'] || '-';
+            // Electrical Usage is in kWh/year based on typical usage for these systems
+            // If Electrical Usage is in kWh per some other unit, adjust calculation
+            const operatingCost = (item['Electrical Usage (kWh/yr)'] * electricalCost).toFixed(2);
+            opCostEl.textContent = isNaN(operatingCost) ? '-' : operatingCost;
+            filtrationEl.textContent = item['Filtration (micron)'] || '-';
+            descriptionEl.textContent = item['Description'] || '-';
+        } else {
+            modelEl.textContent = 'No suitable model found';
+            flowrateEl.textContent = '-';
+            opCostEl.textContent = '-';
+            filtrationEl.textContent = '-';
+            descriptionEl.textContent = '-';
+        }
+    }
+
+    // --- Initial Setup ---
+    fetchData(); // Load the database when the script runs
 });
