@@ -1,87 +1,381 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-A">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cooling Water Filtration Selector</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+            color: #333333;
+        }
+        .header {
+            background-color: #087E9B; /* Color from image */
+            color: white;
+            padding: 20px 40px;
+            font-size: 24px;
+        }
+        .image-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 20px;
+            margin: 0 40px;
+            border-bottom: 2px solid #087E9B;
+        }
+        .image-container img {
+            max-height: 100px;
+            max-width: 30%;
+        }
+        .image-container .filter-image-group {
+            text-align: center;
+        }
+        .image-container .filter-image-group p {
+            margin-top: 5px;
+            font-size: 12px;
+            color: #333333;
+        }
+        .content-wrapper {
+            padding: 20px 40px;
+        }
+        .input-section {
+            border: 2px solid #087E9B; /* Border color from image */
+            margin-bottom: 20px;
+            padding: 20px;
+        }
+        .input-section h3 {
+            margin-top: 0;
+            color: #087E9B;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            display: inline-block;
+            width: 150px;
+            margin-right: 10px;
+        }
+        .input-group input[type="text"],
+        .input-group input[type="number"] {
+            border: none;
+            border-bottom: 1px solid #333333;
+            padding: 5px;
+            width: 150px;
+        }
+        .input-group input[type="radio"] {
+            margin-right: 5px;
+        }
+        .radio-group label {
+            width: auto; /* Adjust for radio labels */
+            margin-right: 20px;
+        }
+        #openInputs, #closedInputs, #electricalCostInputSection, #resultsSection {
+            display: none; /* Initially hidden */
+        }
+        .columns-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .result-column {
+            border: 1px solid #cccccc;
+            padding: 15px;
+            width: 32%;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .result-column h4 {
+            margin-top: 0;
+            color: #087E9B;
+            border-bottom: 1px solid #087E9B;
+            padding-bottom: 5px;
+        }
+        .result-column p {
+            margin: 8px 0;
+            font-size: 14px;
+        }
+        .result-column p strong {
+            color: #333;
+        }
+        button {
+            background-color: #087E9B;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #005f79;
+        }
+    </style>
 </head>
 <body>
-    <div class="header-bar"></div>
-    <div class="container">
-        <h1>Cooling Water Filtration</h1>
 
-        <div class="image-container">
-            <img src="https://i.imgur.com/NPE1yC7.png" alt="Filtration Unit 1" class="filter-image">
-            <img src="https://i.imgur.com/zR27Q2P.png" alt="Filtration Unit 2 V-2000H" class="filter-image">
-            <img src="https://i.imgur.com/bQfP9kI.png" alt="Filtration Unit 3 Skid" class="filter-image">
+    <div class="header">
+        Cooling Water Filtration
+    </div>
+
+    <div class="image-container">
+        <div class="filter-image-group">
+            <img src="https://i.imgur.com/L4f7S7q.png" alt="Separator Example">
+             </div>
+        <div class="filter-image-group">
+            <img src="https://i.imgur.com/j7wKjES.png" alt="VAF Example">
+            <p>V-2000H Series (example)</p>
         </div>
+        <div class="filter-image-group">
+            <img src="https://i.imgur.com/gA2gxpB.png" alt="Vortisand Example">
+            </div>
+    </div>
 
-        <div class="selection-box">
-            <div class="input-group initial-selection">
-                <label><input type="radio" name="systemType" value="open" id="radioOpen"> Open</label>
-                <label><input type="radio" name="systemType" value="closed" id="radioClosed"> Closed</label>
+    <div class="content-wrapper">
+        <div class="input-section">
+            <h3>System Type</h3>
+            <div class="input-group radio-group">
+                <input type="radio" id="openSystem" name="systemType" value="open">
+                <label for="openSystem">Open</label>
+                <input type="radio" id="closedSystem" name="systemType" value="closed">
+                <label for="closedSystem">Closed</label>
             </div>
         </div>
 
-        <div id="openSystemInputs" class="selection-box dynamic-inputs" style="display: none;">
+        <div id="openInputs" class="input-section">
+            <h3>Open System Parameters</h3>
             <div class="input-group">
-                <label for="recircRate">Recirc Rate (gpm):</label>
-                <input type="number" id="recircRate" name="recircRate" placeholder="e.g., 500">
-                <span>OR</span>
+                <label for="recircRate">Recirc Rate (GPM):</label>
+                <input type="number" id="recircRate" name="recircRate">
+            </div>
+            <p style="text-align: center; margin: 5px 0;">OR</p>
+            <div class="input-group">
                 <label for="tonnage">Tonnage (tons):</label>
-                <input type="number" id="tonnage" name="tonnage" placeholder="e.g., 100">
-            </div>
-            <div class="input-group">
-                <label for="electricalCostOpen">Electrical Cost ($/kWh):</label>
-                <input type="number" id="electricalCostOpen" name="electricalCost" step="0.01" placeholder="e.g., 0.10">
+                <input type="number" id="tonnage" name="tonnage">
             </div>
         </div>
 
-        <div id="closedSystemInputs" class="selection-box dynamic-inputs" style="display: none;">
+        <div id="closedInputs" class="input-section">
+            <h3>Closed System Parameters</h3>
             <div class="input-group">
                 <label for="systemVolume">System Volume (Gallons):</label>
-                <input type="number" id="systemVolume" name="systemVolume" placeholder="e.g., 10000">
+                <input type="number" id="systemVolume" name="systemVolume">
             </div>
+        </div>
+
+        <div id="electricalCostInputSection" class="input-section">
+            <h3>Costing</h3>
             <div class="input-group">
-                <label for="electricalCostClosed">Electrical Cost ($/kWh):</label>
-                <input type="number" id="electricalCostClosed" name="electricalCost" step="0.01" placeholder="e.g., 0.10">
+                <label for="electricalCost">Electrical Cost ($/kWh):</label>
+                <input type="number" id="electricalCost" name="electricalCost" step="0.01">
             </div>
-        </div>
-        
-        <div class="selection-box" id="calculateButtonContainer" style="display:none;">
-             <button id="calculateButton">Find Models</button>
+            <button id="findFiltersButton">Find Filters</button>
         </div>
 
-
-        <div id="resultsContainer" class="results-area" style="display: none;">
-            <h2>Recommended Models</h2>
-            <div class="results-grid">
+        <div id="resultsSection">
+            <h3>Recommended Filters</h3>
+            <div class="columns-container">
                 <div class="result-column" id="separatorResult">
-                    <h3>Separator</h3>
-                    <p><strong>Model:</strong> <span class="model">-</span></p>
-                    <p><strong>Flowrate:</strong> <span class="flowrate">-</span> gpm</p>
-                    <p><strong>Description:</strong> <span class="description">-</span></p>
-                    <p><strong>Operating Cost:</strong> $<span class="opCost">-</span>/yr</p>
+                    <h4>Separator</h4>
+                    <p>No model found.</p>
                 </div>
                 <div class="result-column" id="vafResult">
-                    <h3>VAF</h3>
-                    <p><strong>Model:</strong> <span class="model">-</span></p>
-                    <p><strong>Flowrate:</strong> <span class="flowrate">-</span> gpm</p>
-                    <p><strong>Description:</strong> <span class="description">-</span></p>
-                    <p><strong>Operating Cost:</strong> $<span class="opCost">-</span>/yr</p>
+                    <h4>VAF</h4>
+                    <p>No model found.</p>
                 </div>
                 <div class="result-column" id="vortisandResult">
-                    <h3>Vortisand</h3>
-                    <p><strong>Model:</strong> <span class="model">-</span></p>
-                    <p><strong>Flowrate:</strong> <span class="flowrate">-</span> gpm</p>
-                    <p><strong>Description:</strong> <span class="description">-</span></p>
-                    <p><strong>Operating Cost:</strong> $<span class="opCost">-</span>/yr</p>
+                    <h4>Vortisand</h4>
+                    <p>No model found.</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        const DB_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT216WTQadamMw4sIIFvBuWNWe69BCz3GedD5Ahcy3i187k9XGtiBve_yUiDc7jtqYZjtB4mrgDPnbK/pub?gid=0&single=true&output=csv';
+        let dbData = [];
+
+        // DOM Elements
+        const openSystemRadio = document.getElementById('openSystem');
+        const closedSystemRadio = document.getElementById('closedSystem');
+        const openInputsDiv = document.getElementById('openInputs');
+        const closedInputsDiv = document.getElementById('closedInputs');
+        const electricalCostInputSectionDiv = document.getElementById('electricalCostInputSection');
+        const findFiltersButton = document.getElementById('findFiltersButton');
+        const resultsSectionDiv = document.getElementById('resultsSection');
+
+        const recircRateInput = document.getElementById('recircRate');
+        const tonnageInput = document.getElementById('tonnage');
+        const systemVolumeInput = document.getElementById('systemVolume');
+        const electricalCostInput = document.getElementById('electricalCost');
+
+        const separatorResultDiv = document.getElementById('separatorResult');
+        const vafResultDiv = document.getElementById('vafResult');
+        const vortisandResultDiv = document.getElementById('vortisandResult');
+
+        // Fetch and parse CSV data
+        async function fetchData() {
+            try {
+                const response = await fetch(DB_URL);
+                const csvText = await response.text();
+                // Basic CSV parsing: assumes no commas within quoted fields for simplicity
+                const rows = csvText.trim().split('\n');
+                const headers = rows[0].split(',').map(h => h.trim());
+                dbData = rows.slice(1).map(row => {
+                    const values = row.split(',');
+                    let obj = {};
+                    headers.forEach((header, index) => {
+                        obj[header] = values[index] ? values[index].trim() : '';
+                    });
+                    return obj;
+                });
+                console.log("Database loaded:", dbData);
+            } catch (error) {
+                console.error("Error fetching or parsing data:", error);
+                alert("Failed to load filter database. Please check the console for errors.");
+            }
+        }
+
+        function toggleInputs() {
+            resultsSectionDiv.style.display = 'none'; // Hide results when inputs change
+            if (openSystemRadio.checked) {
+                openInputsDiv.style.display = 'block';
+                closedInputsDiv.style.display = 'none';
+                systemVolumeInput.value = ''; // Clear other input
+                electricalCostInputSectionDiv.style.display = 'block';
+            } else if (closedSystemRadio.checked) {
+                closedInputsDiv.style.display = 'block';
+                openInputsDiv.style.display = 'none';
+                recircRateInput.value = ''; // Clear other inputs
+                tonnageInput.value = '';
+                electricalCostInputSectionDiv.style.display = 'block';
+            } else {
+                openInputsDiv.style.display = 'none';
+                closedInputsDiv.style.display = 'none';
+                electricalCostInputSectionDiv.style.display = 'none';
+            }
+        }
+
+        function displayResults(separator, vaf, vortisand, elecCost) {
+            function populateColumn(element, filterData, type) {
+                element.innerHTML = `<h4>${type}</h4>`;
+                if (filterData) {
+                    const opCost = parseFloat(filterData['Electrical Usage (kWh/day)']) * elecCost;
+                    let flowrate = '';
+                    // Determine flowrate based on filter type and available columns
+                    if (type === 'Separator') {
+                        flowrate = filterData['Flow Rate (GPM)'] || filterData[Object.keys(filterData)[8]] || 'N/A'; // Index 8 is first "Flow Rate (GPM)"
+                    } else if (type === 'VAF') {
+                        flowrate = filterData[Object.keys(filterData)[9]] || filterData['Flow Rate (GPM)'] || filterData[Object.keys(filterData)[8]] || 'N/A'; // Index 9 is second "Flow Rate (GPM)"
+                    } else if (type === 'Vortisand') {
+                        flowrate = filterData['Flow (gpm)'] || filterData[Object.keys(filterData)[10]] || 'N/A'; // Index 10 is "Flow (gpm)"
+                    }
+
+
+                    element.innerHTML += `
+                        <p><strong>Model:</strong> ${filterData.Model || 'N/A'}</p>
+                        <p><strong>Flowrate:</strong> ${flowrate} GPM</p>
+                        <p><strong>Operating Cost:</strong> $${opCost.toFixed(2)} /day</p>
+                        <p><strong>Filtration:</strong> ${filterData['Filtration Level (micron)'] || 'N/A'} microns</p>
+                        <p><strong>Description:</strong> ${filterData.Description || 'N/A'}</p>
+                    `;
+                } else {
+                    element.innerHTML += `<p>No suitable model found based on your criteria.</p>`;
+                }
+            }
+
+            populateColumn(separatorResultDiv, separator, 'Separator');
+            populateColumn(vafResultDiv, vaf, 'VAF');
+            populateColumn(vortisandResultDiv, vortisand, 'Vortisand');
+
+            resultsSectionDiv.style.display = 'block';
+        }
+
+        function findMatchingFilters() {
+            const elecCost = parseFloat(electricalCostInput.value);
+            if (isNaN(elecCost) || elecCost < 0) {
+                alert("Please enter a valid Electrical Cost.");
+                return;
+            }
+
+            let selectedSeparator = null;
+            let selectedVAF = null;
+            let selectedVortisand = null;
+
+            if (openSystemRadio.checked) {
+                const recirc = parseFloat(recircRateInput.value);
+                const tonnageVal = parseFloat(tonnageInput.value);
+
+                if (isNaN(recirc) && isNaN(tonnageVal)) {
+                    alert("For Open systems, please enter either Recirc Rate or Tonnage.");
+                    return;
+                }
+
+                dbData.forEach(item => {
+                    const minRecirc = parseFloat(item['Min Recirc Rate']);
+                    const maxRecirc = parseFloat(item['Max Recirc Rate']);
+                    const minTonnage = parseFloat(item['Tonnage Min']);
+                    const maxTonnage = parseFloat(item['Tonnage Max']);
+
+                    let matches = false;
+                    if (!isNaN(recirc) && recirc >= minRecirc && recirc <= maxRecirc) {
+                        matches = true;
+                    } else if (!isNaN(tonnageVal) && tonnageVal >= minTonnage && tonnageVal <= maxTonnage) {
+                        matches = true;
+                    }
+
+                    if (matches) {
+                        if (item['Filter Type'] === 'Separator' && !selectedSeparator) {
+                            selectedSeparator = item;
+                        } else if (item['Filter Type'] === 'VAF' && !selectedVAF) {
+                            selectedVAF = item;
+                        } else if (item['Filter Type'] === 'Vortisand' && !selectedVortisand) {
+                            selectedVortisand = item;
+                        }
+                    }
+                });
+
+            } else if (closedSystemRadio.checked) {
+                const volume = parseFloat(systemVolumeInput.value);
+                if (isNaN(volume)) {
+                    alert("For Closed systems, please enter System Volume.");
+                    return;
+                }
+
+                dbData.forEach(item => {
+                    const loopMin = parseFloat(item['Loop Min']);
+                    const loopMax = parseFloat(item['Loop Max']);
+
+                    if (volume >= loopMin && volume <= loopMax) {
+                        if (item['Filter Type'] === 'Separator' && !selectedSeparator) {
+                            selectedSeparator = item;
+                        } else if (item['Filter Type'] === 'VAF' && !selectedVAF) {
+                            selectedVAF = item;
+                        } else if (item['Filter Type'] === 'Vortisand' && !selectedVortisand) {
+                            selectedVortisand = item;
+                        }
+                    }
+                });
+            }
+
+            displayResults(selectedSeparator, selectedVAF, selectedVortisand, elecCost);
+        }
+
+
+        // Event Listeners
+        openSystemRadio.addEventListener('change', toggleInputs);
+        closedSystemRadio.addEventListener('change', toggleInputs);
+        findFiltersButton.addEventListener('click', findMatchingFilters);
+
+        // Initial setup
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchData();
+            toggleInputs(); // Set initial state of inputs
+        });
+    </script>
+
 </body>
 </html>
