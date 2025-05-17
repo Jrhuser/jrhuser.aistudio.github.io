@@ -1,0 +1,176 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+.header-bar {
+    background-color: #0077A8; /* Teal blue from image */
+    height: 70px;
+    width: 100%;
+}
+
+.container {
+    width: 90%;
+    max-width: 1000px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff; /* Main content area is white */
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h1 {
+    color: #333; /* Dark grey for heading */
+    font-size: 28px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.image-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 10px 0;
+}
+
+.filter-image {
+    max-height: 100px; /* Adjust as needed */
+    max-width: 30%;
+    object-fit: contain;
+}
+
+.selection-box {
+    border: 1px solid #ccc;
+    padding: 20px;
+    margin-bottom: 20px;
+    background-color: #fff; /* White background for selection boxes */
+}
+
+.selection-box:first-of-type { /* First selection box (Open/Closed) */
+     border-top: 5px solid #0077A8;
+}
+
+.dynamic-inputs { /* Subsequent input boxes */
+    border-top: 5px solid #0077A8;
+}
+
+
+.input-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap; /* Allow wrapping for smaller screens */
+}
+
+.input-group label, .input-group span {
+    margin-right: 10px;
+    color: #555;
+    font-weight: bold;
+}
+.input-group.initial-selection label {
+    font-size: 1.1em;
+    margin-right: 20px;
+}
+
+.input-group input[type="radio"] {
+    margin-right: 5px;
+}
+
+.input-group input[type="number"] {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-right: 15px;
+    width: 120px; /* Adjust as needed */
+}
+
+#calculateButtonContainer {
+    border-top: 5px solid #0077A8;
+    text-align: center; /* Center the button */
+}
+
+
+button#calculateButton {
+    background-color: #0077A8; /* Teal blue */
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+button#calculateButton:hover {
+    background-color: #005F86; /* Darker teal blue */
+}
+
+.results-area {
+    border: 1px solid #ccc;
+    border-top: 5px solid #0077A8;
+    padding: 20px;
+    margin-top: 20px;
+    background-color: #fff;
+}
+
+.results-area h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.results-grid {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px; /* Space between columns */
+}
+
+.result-column {
+    flex: 1; /* Each column takes equal width */
+    border: 1px solid #e0e0e0;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+}
+
+.result-column h3 {
+    color: #0077A8; /* Teal blue for column titles */
+    margin-top: 0;
+    border-bottom: 2px solid #0077A8;
+    padding-bottom: 5px;
+}
+
+.result-column p {
+    font-size: 0.9em;
+    line-height: 1.6;
+    color: #444;
+}
+
+.result-column p strong {
+    color: #333;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .image-container {
+        flex-direction: column;
+    }
+    .filter-image {
+        max-width: 60%;
+        margin-bottom: 10px;
+    }
+    .input-group {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .input-group input[type="number"], .input-group label, .input-group span {
+        width: 100%;
+        margin-bottom: 8px;
+        box-sizing: border-box;
+    }
+    .results-grid {
+        flex-direction: column;
+    }
+}
