@@ -45,24 +45,38 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchData() {
         try {
             const response = await fetch(dbUrl);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             const csvText = await response.text();
-            database = Papa.parse(csvText, { header: true, skipEmptyLines: true }).data;
-            // console.log('Database loaded:', database);
+            // Check if Papa is defined (it should be if the script tag is correct in HTML)
+            if (typeof Papa === 'undefined') {
+                console.error('PapaParse library is not loaded. Please check the script tag in your HTML.');
+                alert('Error: CSV parsing library not loaded. Site may not function correctly.');
+                return;
+            }
+            const parsedData = Papa.parse(csvText, { header: true, skipEmptyLines: true });
+            if (parsedData.errors.length > 0) {
+                console.warn("CSV parsing errors encountered:", parsedData.errors);
+                // Decide if you want to alert the user or try to use partial data
+            }
+            database = parsedData.data;
+
             // Convert relevant string numbers to actual numbers
             database = database.map(row => {
                 const numFields = [
                     'Min Recirc Rate', 'Max Recirc Rate', 'Tonnage Min', 'Tonnage Max',
-                    'Loop Min', 'Loop Max', 'Flow Rate', 'Electrical Usage (kWh/yr)' // Assuming this is the correct header for electrical usage
+                    'Loop Min', 'Loop Max', 'Flow Rate', 'Electrical Usage (kWh/yr)'
                 ];
                 numFields.forEach(field => {
-                    if (row[field] !== undefined && row[field] !== null && row[field].trim() !== '') {
-                        row[field] = parseFloat(row[field].replace(/,/g, '')); // Remove commas before parsing
+                    if (row[field] !== undefined && row[field] !== null && String(row[field]).trim() !== '') {
+                        row[field] = parseFloat(String(row[field]).replace(/,/g, ''));
                     } else {
-                        row[field] = null; // Or some other default if appropriate
+                        row[field] = null;
                     }
                 });
                  // Clean up Document fields
-                for (let i = 1; i <= 5; i++) { // Assuming up to 5 document links
+                for (let i = 1; i <= 5; i++) {
                     const docField = `Document ${i}`;
                     const descField = `Document ${i} Description`;
                     if (row[docField] && typeof row[docField] === 'string') {
@@ -74,6 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 return row;
             });
+            // console.log('Database loaded:', database);
         } catch (error) {
             console.error('Error fetching or parsing data:', error);
             alert('Failed to load filter data. Please check the console for errors.');
@@ -86,26 +101,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const selectedType = document.querySelector('input[name="systemType"]:checked').value;
             openSystemInputsSection.classList.add('hidden');
             closedSystemInputsSection.classList.add('hidden');
-            electricalCostSection.classList.remove('hidden'); // Show electrical cost for both
+            electricalCostSection.classList.remove('hidden');
 
             if (selectedType === 'open') {
                 openSystemInputsSection.classList.remove('hidden');
-                // Clear closed system inputs if any
                 systemVolumeInput.value = '';
             } else if (selectedType === 'closed') {
                 closedSystemInputsSection.classList.remove('hidden');
-                // Clear open system inputs if any
                 recircRateInput.value = '';
                 tonnageInput.value = '';
             }
-            // Hide results until calculation
             resultsSection.classList.add('hidden');
             downloadSelectionSection.classList.add('hidden');
             clearResults();
         });
     });
 
-    // Only allow one of Recirc Rate or Tonnage for Open systems
     recircRateInput.addEventListener('input', () => {
         if (recircRateInput.value) tonnageInput.value = '';
     });
@@ -115,7 +126,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     calculateButton.addEventListener('click', () => {
         if (!database.length) {
-            alert('Data is not loaded yet. Please wait a moment and try again.');
+            alert('Data is not loaded yet or is empty. Please wait a moment or check data source and try again.');
+            fetchData(); // Optionally try to fetch data again
             return;
         }
         calculateAndDisplayResults();
@@ -127,6 +139,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function calculateAndDisplayResults() {
         const selectedType = document.querySelector('input[name="systemType"]:checked')?.value;
         const electricalCost = parseFloat(electricalCostInput.value);
+
+        clearResults(); // Clear previous results first
 
         if (!selectedType) {
             alert('Please select a system type (Open or Closed).');
@@ -141,9 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let inputTonnage = parseFloat(tonnageInput.value);
         let inputSystemVolume = parseFloat(systemVolumeInput.value);
 
-        selectedModelsForDownload = []; // Reset for new calculation
-
-        clearResults(); // Clear previous results
+        selectedModelsForDownload = [];
 
         if (selectedType === 'open') {
             if (isNaN(inputRecircRate) && isNaN(inputTonnage)) {
@@ -165,37 +177,35 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-
-        const filterTypes = ['Separator', 'VAF', 'Vortisand'];
+        const filterTypes = ['Separator', 'VAF', 'Vortisand']; // Ensure these match 'Filter Type' column in CSV
         let foundFilters = { Separator: null, VAF: null, Vortisand: null };
 
         database.forEach(row => {
-            const filterType = row['Filter Type']; // Case sensitive, ensure matches CSV header
-            if (!filterTypes.includes(filterType)) return; // Skip if not one of the target types
+            const filterType = row['Filter Type'];
+            if (!filterTypes.includes(filterType)) return;
 
             let match = false;
             if (selectedType === 'open') {
-                if (!isNaN(inputRecircRate)) {
+                if (!isNaN(inputRecircRate) && row['Min Recirc Rate'] !== null && row['Max Recirc Rate'] !== null) {
                     if (inputRecircRate >= row['Min Recirc Rate'] && inputRecircRate <= row['Max Recirc Rate']) {
                         match = true;
                     }
-                } else if (!isNaN(inputTonnage)) {
+                } else if (!isNaN(inputTonnage) && row['Tonnage Min'] !== null && row['Tonnage Max'] !== null) {
                     if (inputTonnage >= row['Tonnage Min'] && inputTonnage <= row['Tonnage Max']) {
                         match = true;
                     }
                 }
-            } else if (selectedType === 'closed') {
+            } else if (selectedType === 'closed' && row['Loop Min'] !== null && row['Loop Max'] !== null) {
                 if (inputSystemVolume >= row['Loop Min'] && inputSystemVolume <= row['Loop Max']) {
                     match = true;
                 }
             }
 
-            if (match && !foundFilters[filterType]) { // Take the first match for each type
+            if (match && !foundFilters[filterType]) {
                 foundFilters[filterType] = row;
             }
         });
 
-        // Populate results
         displayFilter(foundFilters.Separator, 'separator', electricalCost);
         displayFilter(foundFilters.VAF, 'vaf', electricalCost);
         displayFilter(foundFilters.Vortisand, 'vortisand', electricalCost);
@@ -206,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
             downloadSelectionSection.classList.remove('hidden');
         } else {
             alert('No suitable filters found for the given parameters.');
-            resultsSection.classList.add('hidden');
+            resultsSection.classList.add('hidden'); // Keep results hidden if none found
             downloadSelectionSection.classList.add('hidden');
         }
     }
@@ -218,27 +228,35 @@ document.addEventListener('DOMContentLoaded', () => {
         const filtrationSpan = document.getElementById(`${typePrefix}Filtration`);
         const descriptionSpan = document.getElementById(`${typePrefix}Description`);
 
-        if (filterData) {
-            const opCost = (filterData['Electrical Usage (kWh/yr)'] || 0) * electricalCost;
+        // Check if all span elements were found
+        if (!modelSpan || !flowrateSpan || !opCostSpan || !filtrationSpan || !descriptionSpan) {
+            console.error(`One or more display spans for prefix "${typePrefix}" not found. Check HTML IDs.`);
+            return; // Exit if essential display elements are missing
+        }
 
-            modelSpan.textContent = filterData.Model || '-';
+        if (filterData) {
+            const electricalUsage = filterData['Electrical Usage (kWh/yr)'];
+            const opCost = (typeof electricalUsage === 'number' && !isNaN(electricalUsage)) ? electricalUsage * electricalCost : 0;
+
+            modelSpan.textContent = filterData.Model || 'N/A';
             flowrateSpan.textContent = filterData['Flow Rate'] !== null ? filterData['Flow Rate'] : '-';
             opCostSpan.textContent = opCost.toFixed(2);
             filtrationSpan.textContent = filterData.Filtration || '-';
             descriptionSpan.textContent = filterData.Description || '-';
 
-            // Store for download dropdown
             const documents = [];
-            for (let i = 1; i <= 5; i++) { // Check for up to 5 documents
+            for (let i = 1; i <= 5; i++) {
                 const docLink = filterData[`Document ${i}`];
                 const docDesc = filterData[`Document ${i} Description`];
-                if (docLink && docLink.trim() !== '') {
-                    documents.push({ link: docLink.trim(), description: (docDesc || `Document ${i}`).trim() });
+                if (docLink && String(docLink).trim() !== '') {
+                    documents.push({ link: String(docLink).trim(), description: (docDesc || `Document ${i}`).trim() });
                 }
             }
             selectedModelsForDownload.push({
                 name: `${filterData['Filter Type']} - ${filterData.Model}`,
-                documents: documents
+                documents: documents,
+                // Storing all data might be useful if needed later
+                // fullData: filterData
             });
 
         } else {
@@ -254,69 +272,4 @@ document.addEventListener('DOMContentLoaded', () => {
         const spansToClear = [
             separatorModelSpan, separatorFlowrateSpan, separatorOpCostSpan, separatorFiltrationSpan, separatorDescriptionSpan,
             vafModelSpan, vafFlowrateSpan, vafOpCostSpan, vafFiltrationSpan, vafDescriptionSpan,
-            vortisandModelSpan, vortisandFlowrateSpan, vortisandOpCostSpan, vortisandFiltrationSpan, vortisandDescriptionSpan
-        ];
-        spansToClear.forEach(span => span.textContent = '-');
-        document.getElementById('separatorOpCost').textContent = '-'; // Ensure currency symbol is handled if needed
-        document.getElementById('vafOpCost').textContent = '-';
-        document.getElementById('vortisandOpCost').textContent = '-';
-
-        modelSelectForDownload.innerHTML = '<option value="">-- Select Model --</option>';
-        documentLinksContainer.innerHTML = '';
-    }
-
-    function populateDownloadDropdown() {
-        modelSelectForDownload.innerHTML = '<option value="">-- Select Model --</option>'; // Clear existing options
-        selectedModelsForDownload.forEach((model, index) => {
-            const option = document.createElement('option');
-            option.value = index; // Use index to retrieve from selectedModelsForDownload
-            option.textContent = model.name;
-            modelSelectForDownload.appendChild(option);
-        });
-    }
-
-    function displaySelectedModelDocuments() {
-        documentLinksContainer.innerHTML = ''; // Clear previous links
-        const selectedIndex = modelSelectForDownload.value;
-
-        if (selectedIndex === '' || !selectedModelsForDownload[selectedIndex]) {
-            return;
-        }
-
-        const model = selectedModelsForDownload[selectedIndex];
-        if (model.documents && model.documents.length > 0) {
-            const list = document.createElement('ul');
-            model.documents.forEach(doc => {
-                if (doc.link) { // Ensure link is not empty
-                    const listItem = document.createElement('li');
-                    const link = document.createElement('a');
-                    link.href = doc.link;
-                    link.textContent = doc.description || 'Download Document';
-                    link.target = '_blank'; // Open in new tab
-                    listItem.appendChild(link);
-                    list.appendChild(listItem);
-                }
-            });
-            documentLinksContainer.appendChild(list);
-        } else {
-            documentLinksContainer.textContent = 'No documents available for this model.';
-        }
-    }
-
-
-    // --- Initial Setup ---
-    fetchData(); // Load data when the page loads
-
-    // --- PapaParse library (include this or link to a CDN) ---
-    // If you don't want to include the entire library, you can link to a CDN in your HTML:
-    // <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    // For this example, I'm assuming PapaParse is globally available.
-    // If not, you'll need to add the PapaParse library to your project.
-    // You can download it from https://www.papaparse.com/
-    // and include it like <script src="papaparse.min.js"></script> before your script.js
-});
-
-// Make sure to include the PapaParse library for CSV parsing.
-// You can download it from papaparse.com or use a CDN.
-// Add this to your HTML head if using CDN:
-// <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+            vortisandModelSpan, vortisand
