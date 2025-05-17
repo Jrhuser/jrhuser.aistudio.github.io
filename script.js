@@ -19,19 +19,23 @@ function calculateSelection() {
         .then(response => response.text())
         .then(csv => {
             const data = Papa.parse(csv, { header: true }).data;
-            console.log(data); // Debugging: Check the fetched data
+            console.log("Fetched Data:", data); // Debugging: Check the fetched data
+
             const filtered = data.filter(item => {
                 if (systemType === 'Open') {
+                    console.log("Checking Open Criteria:", recircRate, tonnage, item["Min Recirc (gallons)"], item["Max Recirc (gallons)"], item["Tonnage Min"], item["Tonnage Max"]);
                     return (
                         (recircRate && recircRate >= item["Min Recirc (gallons)"] && recircRate <= item["Max Recirc (gallons)"]) ||
                         (tonnage && tonnage >= item["Tonnage Min"] && tonnage <= item["Tonnage Max"])
                     );
                 } else {
+                    console.log("Checking Closed Criteria:", systemVolume, item["Loop Min"], item["Loop Max"]);
                     return systemVolume >= item["Loop Min"] && systemVolume <= item["Loop Max"];
                 }
             });
 
-            console.log(filtered); // Debugging: Check the filtered data
+            console.log("Filtered Data:", filtered); // Debugging: Check the filtered data
+
             const types = ["Separator", "VAF", "Vortisand"];
             const resultsHTML = types.map(type => {
                 const model = filtered.find(item => item["Filter Type"] === type);
