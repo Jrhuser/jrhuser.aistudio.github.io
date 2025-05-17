@@ -3,92 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cooling Water Filtration Selector</title>
+    <title>Cooling Water Filtration Selection Tool</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
+    <div class="container">
         <h1>Cooling Water Filtration</h1>
-    </header>
-
-    <main>
-        <section id="systemTypeSection">
-            <h2>System Type</h2>
-            <div class="input-group">
-                <label><input type="radio" name="systemType" value="open" id="openRadio"> Open</label>
-                <label><input type="radio" name="systemType" value="closed" id="closedRadio"> Closed</label>
+        <form id="selectionForm">
+            <div class="form-group">
+                <label for="systemType">System Type:</label>
+                <input type="radio" id="open" name="systemType" value="Open" onclick="showOpenFields()"> Open
+                <input type="radio" id="closed" name="systemType" value="Closed" onclick="showClosedFields()"> Closed
             </div>
-        </section>
-
-        <section id="openSystemInputs" class="hidden">
-            <h2>Open System Parameters</h2>
-            <div class="input-group">
+            <div id="openFields" class="form-group" style="display:none;">
                 <label for="recircRate">Recirc Rate (gpm):</label>
                 <input type="number" id="recircRate" name="recircRate">
-            </div>
-            <div class="input-group">
-                <p class="or-separator">OR</p>
-            </div>
-            <div class="input-group">
                 <label for="tonnage">Tonnage (tons):</label>
                 <input type="number" id="tonnage" name="tonnage">
+                <label for="electricalCostOpen">Electrical Cost ($/kWh):</label>
+                <input type="number" id="electricalCostOpen" name="electricalCostOpen" step="0.01">
             </div>
-        </section>
-
-        <section id="closedSystemInputs" class="hidden">
-            <h2>Closed System Parameters</h2>
-            <div class="input-group">
+            <div id="closedFields" class="form-group" style="display:none;">
                 <label for="systemVolume">System Volume (Gallons):</label>
                 <input type="number" id="systemVolume" name="systemVolume">
+                <label for="electricalCostClosed">Electrical Cost ($/kWh):</label>
+                <input type="number" id="electricalCostClosed" name="electricalCostClosed" step="0.01">
             </div>
-        </section>
-
-        <section id="electricalCostInput" class="hidden">
-            <h2>Electrical Cost</h2>
-            <div class="input-group">
-                <label for="electricalCost">Electrical Cost ($/kWh):</label>
-                <input type="number" id="electricalCost" name="electricalCost" step="0.01">
-            </div>
-        </section>
-
-        <section id="calculateButtonSection" class="hidden">
-            <button id="calculateBtn">Calculate</button>
-        </section>
-
-        <section id="resultsSection" class="hidden">
-            <h2>Recommended Filters</h2>
-            <div class="results-grid">
-                <div class="result-column" id="separatorColumn">
-                    <h3>Separator</h3>
-                    <p><strong>Model:</strong> <span id="separatorModel">-</span></p>
-                    <p><strong>Flowrate:</strong> <span id="separatorFlowrate">-</span> gpm</p>
-                    <p><strong>Operating Cost:</strong> $<span id="separatorOpCost">-</span>/year</p>
-                    <p><strong>Filtration:</strong> <span id="separatorFiltration">-</span></p>
-                    <p><strong>Description:</strong> <span id="separatorDescription">-</span></p>
-                </div>
-                <div class="result-column" id="vafColumn">
-                    <h3>VAF</h3>
-                    <p><strong>Model:</strong> <span id="vafModel">-</span></p>
-                    <p><strong>Flowrate:</strong> <span id="vafFlowrate">-</span> gpm</p>
-                    <p><strong>Operating Cost:</strong> $<span id="vafOpCost">-</span>/year</p>                    
-                    <p><strong>Filtration:</strong> <span id="vafFiltration">-</span></p>
-                    <p><strong>Description:</strong> <span id="vafDescription">-</span></p>
-                </div>
-                <div class="result-column" id="vortisandColumn">
-                    <h3>Vortisand</h3>
-                    <p><strong>Model:</strong> <span id="vortisandModel">-</span></p>
-                    <p><strong>Flowrate:</strong> <span id="vortisandFlowrate">-</span> gpm</p>
-                    <p><strong>Operating Cost:</strong> $<span id="vortisandOpCost">-</span>/year</p>
-                    <p><strong>Filtration:</strong> <span id="vortisandFiltration">-</span></p>
-                    <p><strong>Description:</strong> <span id="vortisandDescription">-</span></p>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <footer>
-        </footer>
-
+            <button type="button" onclick="calculateSelection()">Submit</button>
+        </form>
+        <div id="results" class="results"></div>
+    </div>
     <script src="script.js"></script>
 </body>
 </html>

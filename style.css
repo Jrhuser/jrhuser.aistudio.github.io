@@ -1,160 +1,83 @@
 body {
-    font-family: Arial, sans-serif; /* A common sans-serif font, adjust if you identify a specific one */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f4f8;
     margin: 0;
-    background-color: #f4f4f4; /* Light gray background, assuming from typical web design */
-    color: #333; /* Dark gray for text */
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+    padding: 0;
 }
 
-header {
-    background-color: #007791; /* Teal color from the image's top bar */
-    color: white;
-    padding: 15px 30px;
-    text-align: left;
+.container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-header h1 {
-    margin: 0;
-    font-size: 1.8em; /* Adjusted for a header */
-    font-weight: normal; /* Font in image appears normal weight */
+h1 {
+    text-align: center;
+    color: #004578;
+    margin-bottom: 30px;
+    font-size: 28px;
 }
 
-main {
-    flex-grow: 1;
-    padding: 20px;
-    max-width: 900px; /* Limit width for better readability */
-    margin: 20px auto; /* Center the main content */
-    background-color: white;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+.form-group {
+    margin-bottom: 25px;
 }
 
-section {
-    background-color: #ffffff; /* White background for sections */
-    margin-bottom: 20px;
-    padding: 20px;
-    border-top: 5px solid #007791; /* Teal top border for sections like in the image */
-    border-radius: 0 0 5px 5px; /* Slight rounding at the bottom */
-}
-
-section h2 {
-    margin-top: 0;
-    color: #333; /* Darker text for section titles */
-    font-size: 1.4em;
-    border-bottom: 1px solid #eee; /* Light separator line */
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-}
-
-.input-group {
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center; /* Vertically align label and input */
-}
-
-.input-group label {
-    margin-right: 10px;
-    min-width: 180px; /* Ensure labels align well */
-    font-weight: bold;
-}
-
-.input-group input[type="radio"] {
-    margin-right: 5px;
-}
-
-.input-group input[type="number"] {
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    width: 150px; /* Adjust as needed */
-}
-
-.input-group .or-separator {
-    margin: 0 15px;
-    font-style: italic;
-    color: #555;
-}
-
-
-button {
-    background-color: #007791; /* Teal button */
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1em;
-}
-
-button:hover {
-    background-color: #005f73; /* Darker teal on hover */
-}
-
-.hidden {
-    display: none;
-}
-
-.results-grid {
-    display: flex;
-    justify-content: space-between; /* Distribute columns evenly */
-    gap: 20px; /* Space between columns */
-    margin-top: 20px;
-}
-
-.result-column {
-    background-color: #f9f9f9; /* Light background for each result column */
-    padding: 15px;
-    border: 1px solid #e0e0e0;
-    border-radius: 5px;
-    flex-basis: 32%; /* Roughly one-third of the width, adjusting for gap */
-    box-sizing: border-box; /* Include padding and border in the element's total width and height */
-}
-
-.result-column h3 {
-    margin-top: 0;
-    color: #007791; /* Teal for filter type titles */
-    font-size: 1.2em;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 8px;
-    margin-bottom: 10px;
-}
-
-.result-column p {
-    margin: 8px 0;
-    font-size: 0.95em;
-    line-height: 1.4;
-}
-
-.result-column p strong {
+label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
     color: #333;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .results-grid {
-        flex-direction: column; /* Stack columns on smaller screens */
-    }
-    .result-column {
-        flex-basis: 100%; /* Full width for stacked columns */
-    }
-    .input-group {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    .input-group label {
-        margin-bottom: 5px;
-        min-width: auto;
-    }
-    .input-group input[type="number"] {
-        width: 100%;
-    }
+input[type="number"],
+input[type="radio"] {
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+    box-sizing: border-box;
 }
 
-footer {
-    text-align: center;
-    padding: 15px;
-    background-color: #333; /* Dark footer */
+input[type="radio"] {
+    width: auto;
+    margin-right: 10px;
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    background-color: #0078d4;
     color: white;
-    margin-top: auto; /* Pushes footer to the bottom */
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #005a9e;
+}
+
+.results {
+    margin-top: 40px;
+}
+
+.result-item {
+    background-color: #e8f1fb;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-left: 6px solid #0078d4;
+    border-radius: 6px;
+}
+
+.result-item h3 {
+    margin-top: 0;
+    color: #004578;
 }
