@@ -19,6 +19,7 @@ function calculateSelection() {
         .then(response => response.text())
         .then(csv => {
             const data = Papa.parse(csv, { header: true }).data;
+            console.log(data); // Debugging: Check the fetched data
             const filtered = data.filter(item => {
                 if (systemType === 'Open') {
                     return (
@@ -30,6 +31,7 @@ function calculateSelection() {
                 }
             });
 
+            console.log(filtered); // Debugging: Check the filtered data
             const types = ["Separator", "VAF", "Vortisand"];
             const resultsHTML = types.map(type => {
                 const model = filtered.find(item => item["Filter Type"] === type);
