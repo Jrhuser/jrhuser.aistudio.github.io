@@ -84,20 +84,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 return row;
             });
-            // DEBUG LOG: Check loaded database
-            console.log('Database loaded (first 5 rows):', database.slice(0, 5)); // Log first 5 rows to prevent overwhelming console
+
+            console.log('Database loaded (first 5 rows):', database.slice(0, 5));
             if (database.length > 0) {
                 console.log('Example row from database:', JSON.stringify(database[0], null, 2));
-                console.log('Expected numeric fields in first row (check for actual numbers):', {
-                    'Min Recirc Rate': database[0]['Min Recirc Rate'],
-                    'Max Recirc Rate': database[0]['Max Recirc Rate'],
-                    'Tonnage Min': database[0]['Tonnage Min'],
-                    'Tonnage Max': database[0]['Tonnage Max'],
-                    'Loop Min': database[0]['Loop Min'],
-                    'Loop Max': database[0]['Loop Max'],
-                    'Flow Rate': database[0]['Flow Rate'],
-                    'Electrical Usage (kWh/yr)': database[0]['Electrical Usage (kWh/yr)']
-                });
                 console.log("All column headers from first data row:", Object.keys(database[0]));
             } else {
                 console.warn("Database is empty after parsing.");
@@ -142,7 +132,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!database || database.length === 0) {
             alert('Data is not loaded yet or is empty. Please wait a moment or check data source and try again.');
             console.warn('Calculate button clicked but database is not ready. Current database:', database);
-            // fetchData(); // Optionally try to fetch data again, or guide user
             return;
         }
         calculateAndDisplayResults();
@@ -171,15 +160,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         selectedModelsForDownload = [];
 
-        // DEBUG LOG: User inputs
         console.log('Calculating with User Inputs:', {
-            selectedType: selectedType,
-            inputRecircRate: inputRecircRate,
-            inputTonnage: inputTonnage,
-            inputSystemVolume: inputSystemVolume,
-            electricalCost: electricalCost
+            selectedType: selectedType, inputRecircRate: inputRecircRate, inputTonnage: inputTonnage,
+            inputSystemVolume: inputSystemVolume, electricalCost: electricalCost
         });
-
 
         if (selectedType === 'open') {
             if (isNaN(inputRecircRate) && isNaN(inputTonnage)) {
@@ -207,11 +191,6 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('--- Starting Filter Matching Process ---');
         database.forEach((row, index) => {
             const filterTypeInRow = row['Filter Type'];
-            // if (!filterTypes.includes(filterTypeInRow)) { // This check might be too restrictive if CSV has other types not for this tool
-            //     // console.log(`Row ${index}: Skipping row with Filter Type: ${filterTypeInRow} (Not one of ${filterTypes.join(', ')})`);
-            //     return;
-            // }
-
             let match = false;
             let reason = "Initial";
 
@@ -224,62 +203,47 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!isNaN(inputRecircRate)) {
                     if (typeof minRecirc === 'number' && typeof maxRecirc === 'number') {
                         reason = `Open - Recirc: Input=${inputRecircRate}, Range=[${minRecirc}-${maxRecirc}] for Model ${row.Model || 'N/A'}`;
-                        if (inputRecircRate >= minRecirc && inputRecircRate <= maxRecirc) {
-                            match = true;
-                            reason += ' -> MATCH';
-                        } else {
-                            reason += ' -> NO MATCH (Recirc out of range)';
-                        }
+                        if (inputRecircRate >= minRecirc && inputRecircRate <= maxRecirc) match = true;
+                        reason += match ? ' -> MATCH' : ' -> NO MATCH (Recirc out of range)';
                     } else {
                         reason = `Open - Recirc: Input=${inputRecircRate}, CSV Recirc Range Invalid/Missing ([${minRecirc}]-[${maxRecirc}]) for Model ${row.Model || 'N/A'} -> NO MATCH`;
                     }
                 } else if (!isNaN(inputTonnage)) {
                      if (typeof minTon === 'number' && typeof maxTon === 'number') {
                         reason = `Open - Tonnage: Input=${inputTonnage}, Range=[${minTon}-${maxTon}] for Model ${row.Model || 'N/A'}`;
-                        if (inputTonnage >= minTon && inputTonnage <= maxTon) {
-                            match = true;
-                            reason += ' -> MATCH';
-                        } else {
-                            reason += ' -> NO MATCH (Tonnage out of range)';
-                        }
+                        if (inputTonnage >= minTon && inputTonnage <= maxTon) match = true;
+                        reason += match ? ' -> MATCH' : ' -> NO MATCH (Tonnage out of range)';
                     } else {
                         reason = `Open - Tonnage: Input=${inputTonnage}, CSV Tonnage Range Invalid/Missing ([${minTon}]-[${maxTon}]) for Model ${row.Model || 'N/A'} -> NO MATCH`;
                     }
                 } else {
-                    reason = `Open - Neither Recirc Rate nor Tonnage provided as valid number. InputRecirc: ${inputRecircRate}, InputTonnage: ${inputTonnage} -> NO MATCH`;
+                    reason = `Open - Neither Recirc Rate nor Tonnage provided. -> NO MATCH`;
                 }
             } else if (selectedType === 'closed') {
                 const loopMin = row['Loop Min'];
                 const loopMax = row['Loop Max'];
                 if (typeof loopMin === 'number' && typeof loopMax === 'number') {
                     reason = `Closed - Volume: Input=${inputSystemVolume}, Range=[${loopMin}-${loopMax}] for Model ${row.Model || 'N/A'}`;
-                    if (inputSystemVolume >= loopMin && inputSystemVolume <= loopMax) {
-                        match = true;
-                        reason += ' -> MATCH';
-                    } else {
-                        reason += ' -> NO MATCH (Volume out of range)';
-                    }
+                    if (inputSystemVolume >= loopMin && inputSystemVolume <= loopMax) match = true;
+                    reason += match ? ' -> MATCH' : ' -> NO MATCH (Volume out of range)';
                 } else {
                      reason = `Closed - Volume: Input=${inputSystemVolume}, CSV Loop Range Invalid/Missing ([${loopMin}]-[${loopMax}]) for Model ${row.Model || 'N/A'} -> NO MATCH`;
                 }
             }
 
-            // Log details only for the relevant filter types to reduce noise or if a match is found
             if (filterTypes.includes(filterTypeInRow)) {
                  console.log(`Row ${index} (Type: ${filterTypeInRow}, Model: ${row.Model || 'N/A'}) - Check Reason: ${reason}`);
             }
-
 
             if (match && filterTypes.includes(filterTypeInRow) && !foundFilters[filterTypeInRow]) {
                 console.log(`%cMATCH FOUND and selected for ${filterTypeInRow}: Model ${row.Model}`, "color: green; font-weight: bold;");
                 foundFilters[filterTypeInRow] = row;
             } else if (match && filterTypes.includes(filterTypeInRow) && foundFilters[filterTypeInRow]) {
-                console.log(`%cAdditional match for ${filterTypeInRow} (Model ${row.Model}), but one already selected (Model ${foundFilters[filterTypeInRow].Model}).`, "color: orange;");
+                console.log(`%cAdditional match for ${filterTypeInRow} (Model ${row.Model}), but one (Model ${foundFilters[filterTypeInRow].Model}) already selected.`, "color: orange;");
             }
         });
         console.log('--- Filter Matching Process Complete ---');
         console.log('Filters selected after processing all rows:', foundFilters);
-
 
         displayFilter(foundFilters.Separator, 'separator', electricalCost);
         displayFilter(foundFilters.VAF, 'vaf', electricalCost);
@@ -320,7 +284,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             console.log(`Displaying ${typePrefix}: Model ${filterData.Model || 'N/A'}, OpCost: ${opCost.toFixed(2)}`);
 
-
             const documents = [];
             for (let i = 1; i <= 5; i++) {
                 const docLink = filterData[`Document ${i}`];
@@ -333,7 +296,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 name: `${filterData['Filter Type']} - ${filterData.Model}`,
                 documents: documents,
             });
-
         } else {
             console.log(`No data to display for ${typePrefix}.`);
             modelSpan.textContent = 'N/A';
@@ -353,8 +315,6 @@ document.addEventListener('DOMContentLoaded', () => {
         spansToClear.forEach(span => {
             if (span) {
                 span.textContent = '-';
-            } else {
-                 // console.warn('A span element for results display was not found during clearResults.');
             }
         });
 
@@ -368,7 +328,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (documentLinksContainer) {
             documentLinksContainer.innerHTML = '';
         }
-        // console.log("Results cleared.");
     }
 
     function populateDownloadDropdown() {
@@ -380,7 +339,6 @@ document.addEventListener('DOMContentLoaded', () => {
             option.textContent = model.name;
             modelSelectForDownload.appendChild(option);
         });
-        // console.log("Download dropdown populated with models:", selectedModelsForDownload.map(m => m.name));
     }
 
     function displaySelectedModelDocuments() {
@@ -390,16 +348,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedIndex = modelSelectForDownload.value;
 
         if (selectedIndex === '' || !selectedModelsForDownload[selectedIndex]) {
-            // console.log("No model selected for download or index out of bounds.");
             return;
         }
 
         const model = selectedModelsForDownload[selectedIndex];
-        // console.log("Displaying documents for selected model:", model.name, model.documents);
         if (model.documents && model.documents.length > 0) {
             const list = document.createElement('ul');
-            model.documents.forEach(doc => {
-                if (doc.link) {
+            model.documents.forEach(doc => { // This forEach is around where line 274 would be
+                if (doc.link) { // This if is where line 275 (the error line) would be
                     const listItem = document.createElement('li');
                     const link = document.createElement('a');
                     link.href = doc.link;
@@ -408,8 +364,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     link.rel = "noopener noreferrer";
                     listItem.appendChild(link);
                     list.appendChild(listItem);
-                }
-            });
+                } // Closes: if (doc.link)
+            }); // Closes: model.documents.forEach
             if (list.hasChildNodes()) {
                 documentLinksContainer.appendChild(list);
             } else {
@@ -418,9 +374,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             documentLinksContainer.textContent = 'No documents available for this model.';
         }
-    }
+    } // Closes: function displaySelectedModelDocuments
 
     // --- Initial Setup ---
     console.log("DOM fully loaded. Initializing script and fetching data...");
     fetchData();
-});
+}); // End of script.js
